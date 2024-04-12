@@ -1,0 +1,23 @@
+# Stage 1: Build stage for installing dnspython
+FROM python:3.12 as builder
+
+# Copy requirements.txt
+COPY requirements.txt .
+
+# Install dnspython
+RUN pip install -r requirements.txt --target /python
+
+# Stage 2: Lightweight base image for packaging
+FROM alpine:latest
+
+# Install zip
+RUN apk add --no-cache zip
+
+# Copy the dnspython library from the builder stage
+COPY --from=builder /python /python/lib/python3.12/site-packages
+
+# Create a zip file of the dnspython library
+RUN zip -r python_lambda_layer.zip /python
+
+# Command to copy the zip file to the mounted volume when the container starts
+CMD ["cp", "python_lambda_layer.zip", "/output/python_lambda_layer.zip"]

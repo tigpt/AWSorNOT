@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  dnspython-layer-builder:
+    platform: linux/amd64
+    build: .
+    volumes:
+      - ./output:/output
