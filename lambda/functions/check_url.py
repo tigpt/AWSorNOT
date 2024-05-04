@@ -19,7 +19,10 @@ def fetch_aws_ip_ranges():
     response = requests.get(url)
     aws_data = response.json()
     return aws_data['prefixes']
-    
+
+# Load AWS IP ranges
+aws_prefixes = fetch_aws_ip_ranges()
+
 @xray_recorder.capture('is_aws_hosted')
 def is_aws_hosted(url):
     try:
@@ -27,9 +30,6 @@ def is_aws_hosted(url):
         ip_address = socket.gethostbyname(url)
     except socket.gaierror:
         return False, "DNS resolution failed"
-
-    # Load AWS IP ranges
-    aws_prefixes = fetch_aws_ip_ranges()
 
     # Check if IP in AWS ranges
     for prefix in aws_prefixes:
