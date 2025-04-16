@@ -1,78 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AWS or NOT - Check URL Hosting</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS or NOT - URL Checker</title>
+
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
     <style>
         body {
-            padding-top: 40px;
-            padding-bottom: 40px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
         }
-        .form-awsornot {
-            max-width: 330px;
-            padding: 15px;
-            margin: auto;
+
+        .card {
+            border: none;
+            border-radius: 1rem;
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
-        .form-awsornot .form-floating:focus-within {
-            z-index: 2;
+
+        .card-header {
+            background-color: #fff;
+            text-align: center;
+            padding: 1.5rem;
         }
-        .form-awsornot input[type="url"] {
-            margin-bottom: -1px;
-            border-bottom-right-radius: 0;
-            border-bottom-left-radius: 0;
+
+        .card-body {
+            background-color: #fff;
+            padding: 2rem;
         }
-        .form-awsornot button {
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
+
+        .form-control {
+            border-radius: 0.5rem;
+        }
+
+        .btn-primary {
+            border-radius: 0.5rem;
+        }
+
+        .result-box {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .result-success {
+            background-color: #28a745;
+        }
+
+        .result-neutral {
+            background-color: #6c757d;
+        }
+
+        .result-error {
+            background-color: #dc3545;
         }
     </style>
 </head>
+
 <body>
-
-<div class="container">
-    <div class="form-awsornot">
-        <h1 class="h3 mb-3 fw-normal text-center">Check if your URL is hosted on AWS</h1>
-        <form id="urlForm">
-            <div class="form-floating">
-                <input type="url" class="form-control" id="urlInput" placeholder="Enter URL" required onblur="if (!~this.value.indexOf('http')) this.value = 'https://' + this.value">
-                <label for="urlInput">URL</label>
-            </div>
-            <button class="w-100 btn btn-lg btn-primary" type="submit">Check Now</button>
-        </form>
-        <p class="mt-5 mb-3 text-muted text-center">&copy; 2024 AWS or NOT</p>
+    <div class="card">
+        <div class="card-header">
+            <h2>AWS or NOT</h2>
+            <p class="mb-0">Check if a URL is using AWS</p>
+        </div>
+        <div class="card-body">
+            <form id="urlForm">
+                <div class="mb-3">
+                    <label for="urlInput" class="form-label">Enter URL</label>
+                    <input type="url" class="form-control" id="urlInput" placeholder="https://example.com" required
+                        onblur="if (!~this.value.indexOf('http')) this.value = 'https://' + this.value">
+                </div>
+                <button class="btn btn-primary w-100" type="submit">
+                    <span id="btn-text">Check Now</span>
+                    <span id="loading-spinner" class="spinner-border spinner-border-sm d-none" role="status"
+                        aria-hidden="true"></span>
+                </button>
+            </form>
+            <div id="result" class="text-center mt-3"></div>
+        </div>
+        <div class="card-footer text-center text-muted">
+            <a href="https://github.com/tigpt/AWSorNOT">Made with ❤️ by AWS UG Lisbon</a>
+        </div>
     </div>
-    <!-- Response display -->
-    <div id="result" class="text-center"></div>
-</div>
 
-<!-- Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.getElementById('urlForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    var url = document.getElementById('urlInput').value;
-    var data = { 'url': url };
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const btn = document.querySelector('button');
+            const btnText = document.getElementById('btn-text');
+            const spinner = document.getElementById('loading-spinner');
+            const resultDiv = document.getElementById('result');
+            const url = document.getElementById('urlInput').value;
+            const data = { 'url': url };
 
-    fetch('https://api.awsornot.com/scan', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('result').innerHTML = '<p>Result: ' + data.message + '</p>';
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('result').innerHTML = '<p>Error checking the URL. Please try again later.</p>';
-    });
-});
-</script>
+            btnText.textContent = 'Checking...';
+            spinner.classList.remove('d-none');
+            btn.disabled = true;
+            resultDiv.innerHTML = '';
+
+            fetch('https://api.awsornot.com/scan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    spinner.classList.add('d-none');
+                    btnText.textContent = 'Check Now';
+                    btn.disabled = false;
+
+                    let bgClass = data.aws_hosted ? 'result-success' : 'result-neutral';
+                    let icon = data.aws_hosted ? 'bi-cloud-check-fill' : 'bi-cloud-slash-fill';
+
+                    resultDiv.innerHTML = `
+            <div class="result-box ${bgClass}">
+              <i class="bi ${icon}" style="font-size: 1.5rem;"></i>
+              <span>${data.message}</span>
+            </div>
+          `;
+                })
+                .catch(error => {
+                    spinner.classList.add('d-none');
+                    btnText.textContent = 'Check Now';
+                    btn.disabled = false;
+                    console.error('Error:', error);
+                    resultDiv.innerHTML = `
+            <div class="result-box result-error">
+              <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
+              <span>Error checking the URL. Please try again later.</span>
+            </div>
+          `;
+                });
+        });
+    </script>
 </body>
+
 </html>
