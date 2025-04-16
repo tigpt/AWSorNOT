@@ -1,0 +1,83 @@
+{
+  "Comment": "State machine with caching using DynamoDB and Lambda fallback",
+  "StartAt": "DynamoDB GetScan",
+  "States": {
+    "DynamoDB GetScan": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:getItem",
+      "Parameters": {
+        "TableName": "scan",
+        "Key": {
+          "url": {
+            "S.$": "$.url"
+          }
+        }
+      },
+      "ResultPath": "$.ddb",
+      "Next": "Check DynamoDB Response"
+    },
+    "Check DynamoDB Response": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.ddb.Item",
+          "IsPresent": true,
+          "Next": "Return Cached"
+        }
+      ],
+      "Default": "Lambda_Clean_Request"
+    },
+    "Return Cached": {
+      "Type": "Pass",
+      "Parameters": {
+        "url.$": "$.url",
+        "message.$": "$.ddb.Item.message.S",
+        "domain.$": "$.ddb.Item.domain.S",
+        "aws_hosted.$": "$.ddb.Item.aws_hosted.BOOL"
+      },
+      "End": true
+    },
+    "Lambda_Clean_Request": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:eu-west-1:730335486266:function:api_awsornot_com_scan_Clean_Request",
+      "Parameters": {
+        "url.$": "$.url"
+      },
+      "ResultPath": "$.lambdaResult",
+      "Next": "Put in DynamoDB"
+    },
+    "Put in DynamoDB": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "scan",
+        "Item": {
+          "url": {
+            "S.$": "$.url"
+          },
+          "message": {
+            "S.$": "$.lambdaResult.message"
+          },
+          "domain": {
+            "S.$": "$.lambdaResult.domain"
+          },
+          "aws_hosted": {
+            "BOOL.$": "$.lambdaResult.aws_hosted"
+          }
+        }
+      },
+      "ResultPath": "$.ddbPut",
+      "Next": "Return Lambda Result"
+    },
+    "Return Lambda Result": {
+      "Type": "Pass",
+      "Parameters": {
+        "url.$": "$.url",
+        "message.$": "$.lambdaResult.message",
+        "domain.$": "$.lambdaResult.domain",
+        "aws_hosted.$": "$.lambdaResult.aws_hosted"
+      },
+      "End": true
+    }
+  }
+}
