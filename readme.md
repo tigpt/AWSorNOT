@@ -6,20 +6,20 @@
 
 ---
 
-## 📚 Index
+## Index
 
-- [🔍 How It Works](#🔍-how-it-works)
-- [📦 Tech Stack](#📦-tech-stack)
-- [🧩 Lambda Function Explained](#🧩-lambda-function-explained)
-- [🖥 Demo](#🖥-demo)
-- [📸 Example Response](#📸-example-response)
-- [🤝 Community Initiative](#🤝-community-initiative)
+- [🔍 How It Works](#how-it-works)
+- [📦 Tech Stack](#tech-stack)
+- [🧩 Lambda Function Explained](#lambda-function-explained)
+- [🖥 Demo](#demo)
+- [📸 Example Response](#example-response)
+- [🤝 Community Initiative](#community-initiative)
 
 ![Screenshot](/doc/screenshot.jpg)
 ![stepfunction](/doc/stepfunction.png)
 ---
 
-## 🔍 How It Works
+## How It Works
 
 1. User enters a URL in the input field.
 2. A request is sent to the backend API (`https://api.awsornot.com/scan`).
@@ -28,14 +28,14 @@
 
 ---
 
-## 📦 Tech Stack
+## Tech Stack
 
-### 🚀 Frontend (Static Website)
+### Frontend (Static Website)
 - **Amazon S3** – hosts the static HTML/CSS/JS/Images assets
 - **Amazon CloudFront** – delivers the content globally with low latency
 - **Amazon Route 53** – provides DNS routing for the custom domain
 
-### 🧠 Backend (API + Processing)
+### Backend (API + Processing)
 - **Amazon API Gateway** – handles the public API endpoint (`/scan`)
 - **AWS Step Functions** – orchestrates the logic for checking hosting information
 - **AWS Lambda** – serverless functions that perform detection logic
@@ -44,7 +44,7 @@
 
 ---
 
-## 🧩 Lambda Function Explained
+## Lambda Function Explained
 
 The core of the logic lives inside an AWS Lambda function. Here's a simple breakdown of what it does:
 
@@ -57,13 +57,13 @@ The Lambda is written in Python and is designed to be lightweight, stateless, an
 
 ---
 
-## 🖥 Demo
+## Demo
 
 Try it live: [awsornot.com](https://awsornot.com)
 
 ---
 
-## 📸 Example Response
+## Example Response
 
 ```json
 {
@@ -75,6 +75,6 @@ Try it live: [awsornot.com](https://awsornot.com)
 ```
 ---
 
-## 🤝 Community Initiative
+## Community Initiative
 
 This project is an initiative of the [AWS User Group Lisbon](https://lisbon.awsug.site/), collaboratively developed by its members. It serves as a hands-on learning and teaching tool to explore and demonstrate the power of AWS serverless services in a real-world application.

@@ -78,14 +78,15 @@
 <body>
     <div class="card">
         <div class="card-header">
-            <img src="./logo.jpg" alt="AWS or NOT Logo" class="img-fluid mb-3" style="max-width: 350px;" />
+            <a href="https://AWSorNOT.com"><img src="./logo.jpg" alt="AWS or NOT Logo" class="img-fluid mb-3"
+                    style="max-width: 350px;" /></a>
             <p class="mb-0">Check if a URL is using AWS</p>
         </div>
         <div class="card-body">
             <form id="urlForm">
                 <div class="mb-3">
                     <label for="urlInput" class="form-label">Enter URL</label>
-                    <input type="url" class="form-control" id="urlInput" placeholder="https://example.com" required
+                    <input type="url" class="form-control" id="urlInput" placeholder="https://netflix.com" required
                         onblur="if (!~this.value.indexOf('http')) this.value = 'https://' + this.value">
                 </div>
                 <button class="btn btn-primary w-100" type="submit">
