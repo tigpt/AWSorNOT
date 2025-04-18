@@ -59,7 +59,7 @@ The Lambda is written in Python and is designed to be lightweight, stateless, an
 
 ## Demo
 
-Try it live: [awsornot.com](https://awsornot.com)
+Try it live: [AWSorNOT.com](https://awsornot.com)
 
 ---
 
