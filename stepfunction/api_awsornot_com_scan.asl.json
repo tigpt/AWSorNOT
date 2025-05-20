@@ -1,7 +1,16 @@
 {
-  "Comment": "State machine with caching using DynamoDB and Lambda fallback",
-  "StartAt": "DynamoDB GetScan",
+  "Comment": "State machine with caching using DynamoDB and Lambda fallback with TTL check",
+  "StartAt": "Generate Timestamps",
   "States": {
+    "Generate Timestamps": {
+      "Type": "Pass",
+      "Parameters": {
+        "url.$": "$.url",
+        "current_time.$": "$$.State.EnteredTime",
+        "ttl_seconds": 86400
+      },
+      "Next": "DynamoDB GetScan"
+    },
     "DynamoDB GetScan": {
       "Type": "Task",
       "Resource": "arn:aws:states:::dynamodb:getItem",
@@ -20,8 +29,38 @@
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.ddb.Item",
-          "IsPresent": true,
+          "And": [
+            {
+              "Variable": "$.ddb.Item",
+              "IsPresent": true
+            },
+            {
+              "Variable": "$.ddb.Item.timestamp.S",
+              "IsPresent": true
+            }
+          ],
+          "Next": "Check Timestamp Validity"
+        }
+      ],
+      "Default": "Lambda_Clean_Request"
+    },
+    "Check Timestamp Validity": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:eu-west-1:730335486266:function:api_awsornot_com_scan_CheckTTL",
+      "Parameters": {
+        "current_time.$": "$.current_time",
+        "cached_timestamp.$": "$.ddb.Item.timestamp.S",
+        "ttl_seconds.$": "$.ttl_seconds"
+      },
+      "ResultPath": "$.ttl_check",
+      "Next": "Timestamp Valid?"
+    },
+    "Timestamp Valid?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.ttl_check.valid",
+          "BooleanEquals": true,
           "Next": "Return Cached"
         }
       ],
@@ -33,7 +72,9 @@
         "url.$": "$.url",
         "message.$": "$.ddb.Item.message.S",
         "domain.$": "$.ddb.Item.domain.S",
-        "aws_hosted.$": "$.ddb.Item.aws_hosted.BOOL"
+        "aws_hosted.$": "$.ddb.Item.aws_hosted.BOOL",
+        "timestamp.$": "$.ddb.Item.timestamp.S",
+        "cached": true
       },
       "End": true
     },
@@ -63,6 +104,9 @@
           },
           "aws_hosted": {
             "BOOL.$": "$.lambdaResult.aws_hosted"
+          },
+          "timestamp": {
+            "S.$": "$$.State.EnteredTime"
           }
         }
       },
@@ -75,7 +119,9 @@
         "url.$": "$.url",
         "message.$": "$.lambdaResult.message",
         "domain.$": "$.lambdaResult.domain",
-        "aws_hosted.$": "$.lambdaResult.aws_hosted"
+        "aws_hosted.$": "$.lambdaResult.aws_hosted",
+        "timestamp.$": "$$.State.EnteredTime",
+        "cached": false
       },
       "End": true
     }
