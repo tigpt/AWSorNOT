@@ -3,7 +3,13 @@ import socket
 import requests
 import ipaddress
 import json
+import time
 from urllib.parse import urlparse
+
+# Global variables for caching
+aws_prefixes = None
+last_update_time = 0
+CACHE_TTL = 3600  # Cache TTL in seconds (1 hour)
 
 @xray_recorder.capture('extract_domain')
 def extract_domain(url):
@@ -14,14 +20,20 @@ def extract_domain(url):
 
 @xray_recorder.capture('fetch_aws_ip_ranges')
 def fetch_aws_ip_ranges():
-    # URL for AWS IP ranges JSON
-    url = "https://ip-ranges.amazonaws.com/ip-ranges.json"
-    response = requests.get(url)
-    aws_data = response.json()
-    return aws_data['prefixes']
-
-# Load AWS IP ranges
-aws_prefixes = fetch_aws_ip_ranges()
+    global aws_prefixes, last_update_time
+    current_time = time.time()
+    
+    # Only fetch if cache is empty or expired
+    if aws_prefixes is None or (current_time - last_update_time) > CACHE_TTL:
+        # URL for AWS IP ranges JSON
+        url = "https://ip-ranges.amazonaws.com/ip-ranges.json"
+        response = requests.get(url)
+        aws_data = response.json()
+        aws_prefixes = aws_data['prefixes']
+        last_update_time = current_time
+        print(f"AWS IP ranges refreshed at {time.ctime(last_update_time)}")
+        
+    return aws_prefixes
 
 @xray_recorder.capture('is_aws_hosted')
 def is_aws_hosted(url):
@@ -31,8 +43,11 @@ def is_aws_hosted(url):
     except socket.gaierror:
         return False, "DNS resolution failed"
 
+    # Get the latest AWS IP ranges
+    prefixes = fetch_aws_ip_ranges()
+    
     # Check if IP in AWS ranges
-    for prefix in aws_prefixes:
+    for prefix in prefixes:
         network = ipaddress.ip_network(prefix['ip_prefix'])
         if ipaddress.ip_address(ip_address) in network:
             return True, f"Hosted on AWS ({prefix['service']})"
