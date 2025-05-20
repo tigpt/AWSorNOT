@@ -72,6 +72,15 @@
         .result-error {
             background-color: #dc3545;
         }
+
+        .details-section {
+            max-width: 100%;
+        }
+
+        .list-group-item {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -135,12 +144,48 @@
                     let bgClass = data.aws_hosted ? 'result-success' : 'result-neutral';
                     let icon = data.aws_hosted ? 'bi-cloud-check-fill' : 'bi-cloud-slash-fill';
 
+                    // Extract AWS service from message if available
+                    let service = '';
+                    if (data.aws_hosted) {
+                        const serviceMatch = data.message.match(/\(([^)]+)\)/);
+                        service = serviceMatch ? serviceMatch[1] : "AWS Service";
+                    }
+
+                    // Format timestamp if available
+                    const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleString() : 'N/A';
+
                     resultDiv.innerHTML = `
-            <div class="result-box ${bgClass}">
-              <i class="bi ${icon}" style="font-size: 1.5rem;"></i>
-              <span>${data.message}</span>
-            </div>
-          `;
+                        <div class="result-box ${bgClass}">
+                          <i class="bi ${icon}" style="font-size: 1.5rem;"></i>
+                          <span>${data.message}</span>
+                        </div>
+                        <div class="details-section mt-3">
+                          <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#detailsCollapse">
+                            Show Details <i class="bi bi-chevron-down"></i>
+                          </button>
+                          <div class="collapse mt-2" id="detailsCollapse">
+                            <div class="card card-body">
+                              <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                  <span>URL:</span> <strong>${data.url}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                  <span>Domain:</span> <strong>${data.domain}</strong>
+                                </li>
+                                
+                                ${data.cached ? '<li class="list-group-item d-flex justify-content-between"><span>Result from cache:</span> <span class="badge bg-info">Yes</span></li>' : ''}
+                                ${data.aws_hosted ? `<li class="list-group-item d-flex justify-content-between"><span>AWS Service:</span> <strong>${service}</strong></li>` : ''}
+                                <li class="list-group-item d-flex justify-content-between">
+                                  <span>Checked at:</span> <strong>${timestamp}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                  <span>Details:</span> <strong>${data.message}</strong>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                    `;
                 })
                 .catch(error => {
                     spinner.classList.add('d-none');
@@ -148,11 +193,11 @@
                     btn.disabled = false;
                     console.error('Error:', error);
                     resultDiv.innerHTML = `
-            <div class="result-box result-error">
-              <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
-              <span>Error checking the URL. Please try again later.</span>
-            </div>
-          `;
+                        <div class="result-box result-error">
+                          <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
+                          <span>Error checking the URL. Please try again later.</span>
+                        </div>
+                    `;
                 });
         });
     </script>
