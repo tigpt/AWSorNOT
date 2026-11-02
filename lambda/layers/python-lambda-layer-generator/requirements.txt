@@ -1,4 +1,4 @@
-dnspython==2.6.1
+dnspython==2.9.0
 aws-lambda-powertools[tracer]  # Tracer requires AWS X-Ray SDK dependency
 requests
 ipaddress
